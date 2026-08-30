@@ -149,6 +149,7 @@ def public_view(db: Session, user: User) -> dict:
         },
         "links": [
             {
+                "id": l.id,
                 "platform": l.platform,
                 "url": l.url,
                 "verified": l.verified,

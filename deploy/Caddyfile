@@ -1,0 +1,15 @@
+# oppflow Caddy 配置：自动 HTTPS（需将域名 A 记录指向服务器并放行 80/443）
+# SITE_DOMAIN 为 .env 中的域名，如 oppflow.example.com；本地测试可用 :80
+{$SITE_DOMAIN} {
+	encode gzip
+
+	# API 与公开分享页 → FastAPI
+	reverse_proxy /api/* app:8000
+	reverse_proxy /u/* app:8000
+	reverse_proxy /docs* app:8000
+	reverse_proxy /openapi.json app:8000
+	reverse_proxy /health app:8000
+
+	# 其余路径由 FastAPI 托管的 SPA 前端处理（后端已做 SPA 回退）
+	reverse_proxy app:8000
+}

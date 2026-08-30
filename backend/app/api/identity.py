@@ -154,6 +154,14 @@ def create_snapshot(user: CurrentUser, db: DbDep):
     return {"id": snap.id, "snapshot": snap.snapshot}
 
 
+@router.get("/handle/{handle}")
+def public_identity_by_handle(handle: str, db: DbDep):
+    target = db.scalars(select(User).where(User.handle == handle)).first()
+    if target is None or target.status != "active":
+        raise AppError(404, "not_found", "名片不存在")
+    return identity_service.public_view(db, target)
+
+
 @router.get("/{user_id}")
 def public_identity(user_id: int, db: DbDep):
     target = _ensure_user_visible(db, user_id)
