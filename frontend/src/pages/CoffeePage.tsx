@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 
 import { api, ApiError, qs } from "@/api/client";
-import { Aurora, GlareCard } from "@/components/bits";
+import { GlareCard } from "@/components/bits";
 import { Avatar, EmptyState, ErrorState, Modal, PageLoading, toast } from "@/components/ui";
 import type { CoffeeChat } from "@/lib/types";
 import { timeAgo } from "@/lib/utils";
@@ -82,18 +82,15 @@ export default function CoffeePage() {
   if (!user) {
     return (
       <div className="mx-auto max-w-3xl">
-        <section className="relative -mx-4 mb-6 overflow-hidden px-4 pb-8 pt-4">
-          <Aurora tint="amber" className="opacity-70" />
-          <div className="relative text-center">
-            <div className="text-5xl">☕</div>
-            <h1 className="mt-3 text-2xl font-bold tracking-tight text-white">Coffee Chat</h1>
-            <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-mist">
-              一次 30 分钟的真诚交谈：AI 备好议程、整理纪要、沉淀互评。
-            </p>
-            <Link to="/login" className="btn-primary mt-6">
-              登录后找 TA 喝杯咖啡
-            </Link>
-          </div>
+        <section className="mb-8 border-b border-line pb-8 pt-4 text-center">
+          <div className="text-5xl">☕</div>
+          <h1 className="mt-4 font-display text-3xl font-bold tracking-[-0.02em] text-white md:text-4xl">Coffee Chat</h1>
+          <p className="mx-auto mt-3 max-w-md text-[15px] leading-relaxed text-dim">
+            一次 30 分钟的真诚交谈：AI 备好议程、整理纪要、沉淀互评。
+          </p>
+          <Link to="/login" className="btn-primary mt-7">
+            登录后找 TA 喝杯咖啡
+          </Link>
         </section>
         <MembersDirectory members={members} onInvite={() => toast("请先登录", "err")} />
       </div>
@@ -102,23 +99,23 @@ export default function CoffeePage() {
 
   return (
     <div className="mx-auto max-w-3xl">
-      {/* amber 身份 hero */}
-      <section className="relative -mx-4 mb-6 overflow-hidden px-4 pb-4 pt-2">
-        <Aurora tint="amber" className="opacity-70" />
-        <div className="relative flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <h1 className="flex items-center gap-2.5 text-2xl font-bold tracking-tight text-white md:text-3xl">
-              <span className="flex h-9 w-9 items-center justify-center rounded-xl border border-amber-400/25 bg-amber-400/10 text-amber-300">
-                <Coffee size={19} />
-              </span>
-              Coffee Chat
-            </h1>
-            <p className="mt-1.5 text-sm text-mist">看到对的人就约一杯，AI 帮你把聊天变成人脉</p>
-          </div>
-          <button className="btn-primary !bg-amber-400 !text-[#422006] hover:!brightness-105" onClick={() => setInviteTarget({ handle: "", display_name: "", avatar_emoji: "", headline: "", skills: [], github_login: null, has_card: false, joined: "" })}>
-            <Send size={14} /> 用 handle 邀请
-          </button>
+      {/* amber 身份 hero：大标题 + 细线 */}
+      <section className="mb-7 flex flex-wrap items-end justify-between gap-4 border-b border-line pb-6">
+        <div>
+          <h1 className="flex items-center gap-3 font-display text-3xl font-bold tracking-[-0.02em] text-white md:text-4xl">
+            <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-line bg-card text-amber-300">
+              <Coffee size={20} />
+            </span>
+            Coffee Chat
+          </h1>
+          <p className="mt-2.5 text-[15px] text-dim">看到对的人就约一杯，AI 帮你把聊天变成人脉</p>
         </div>
+        <button
+          className="inline-flex items-center gap-2 rounded-full bg-amber-400 px-5 py-2.5 text-sm font-semibold text-[#422006] transition-all duration-300 hover:scale-[1.04] hover:brightness-105"
+          onClick={() => setInviteTarget({ handle: "", display_name: "", avatar_emoji: "", headline: "", skills: [], github_login: null, has_card: false, joined: "" })}
+        >
+          <Send size={14} /> 用 handle 邀请
+        </button>
       </section>
 
       {/* 成员目录：点卡片直接发起邀约 */}

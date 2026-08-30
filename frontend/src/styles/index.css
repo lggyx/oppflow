@@ -7,12 +7,14 @@
   --color-card: #161616;
   --color-card-2: #1d1d1d;
   --color-line: rgba(255, 255, 255, 0.08);
-  --color-mist: #a3a3a3;
-  --color-fog: #6b6b6b;
+  /* 参考站文字分层：白色透明度体系（dim=次要，faint=弱化） */
+  --color-mist: rgba(255, 255, 255, 0.55);
+  --color-fog: rgba(255, 255, 255, 0.35);
   --color-accent: #34d399;
   --color-accent-ink: #052e22;
   --color-highlight: #fcd34d;
   --font-sans: "Inter Variable", "PingFang SC", "Microsoft YaHei", "Noto Sans SC", sans-serif;
+  --font-display: "Satoshi", "Inter Variable", "PingFang SC", "Microsoft YaHei", "Noto Sans SC", sans-serif;
   --font-serifit: "Instrument Serif", Georgia, serif;
 }
 
@@ -20,25 +22,31 @@
   html {
     background: var(--color-ink);
     color-scheme: dark;
+    scrollbar-width: thin;
+    scrollbar-color: #333 transparent;
   }
   body {
     @apply bg-ink text-neutral-200 font-sans antialiased;
   }
   ::selection {
-    background: rgba(52, 211, 153, 0.3);
+    background: rgba(255, 255, 255, 0.9);
+    color: #0a0a0a;
   }
 }
 
 @layer components {
+  .font-display {
+    font-family: var(--font-display);
+  }
   .card {
     @apply bg-card border border-line rounded-2xl;
   }
-  /* btn 基座 + 各变体共用同一组基样式（Tailwind v4 不支持 @apply 自定义类） */
+  /* 参考站胶囊语言：按钮全圆角 */
   .btn,
   .btn-primary,
   .btn-ghost,
   .btn-ghost-danger {
-    @apply inline-flex items-center justify-center gap-1.5 rounded-xl px-4 h-10 text-sm font-medium
+    @apply inline-flex items-center justify-center gap-1.5 rounded-full px-5 h-10 text-sm font-medium
       transition-all duration-200 cursor-pointer select-none whitespace-nowrap
       disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.98];
   }
@@ -52,7 +60,7 @@
     @apply border border-red-500/30 bg-transparent text-red-400 hover:bg-red-500/10;
   }
   .btn-sm {
-    @apply h-8 px-3 text-xs rounded-lg;
+    @apply h-8 px-3.5 text-xs;
   }
   .input,
   .textarea {
@@ -75,6 +83,11 @@
   .serif-it {
     font-family: var(--font-serifit);
     font-style: italic;
+  }
+  /* SplitText 逐字符动画容器 */
+  .split-char {
+    display: inline-block;
+    will-change: transform, opacity;
   }
 }
 

@@ -4,7 +4,6 @@ import { useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 
 import { api, qs } from "@/api/client";
-import { Aurora } from "@/components/bits";
 import { EmptyState, ErrorState, PageLoading } from "@/components/ui";
 import type { ForumThread } from "@/lib/types";
 import { timeAgo } from "@/lib/utils";
@@ -96,25 +95,22 @@ export default function ForumPage() {
 
   return (
     <div className="mx-auto max-w-4xl">
-      {/* sky 身份 hero */}
-      <section className="relative -mx-4 mb-5 overflow-hidden px-4 pb-4 pt-2">
-        <Aurora tint="sky" className="opacity-60" />
-        <div className="relative flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <h1 className="flex items-center gap-2.5 text-2xl font-bold tracking-tight text-white md:text-3xl">
-              <span className="flex h-9 w-9 items-center justify-center rounded-xl border border-sky-400/25 bg-sky-400/10 text-sky-300">
-                <MessagesSquare size={19} />
-              </span>
-              开发者论坛
-            </h1>
-            <p className="mt-1.5 text-sm text-mist">提问 · 分享 · 组队 · 内推，好问题值得好答案</p>
-          </div>
-          {user && (
-            <Link to="/forum/new" className="btn-ghost !border-sky-400/30 !text-sky-300 hover:!bg-sky-400/10">
-              <PenLine size={14} /> 发帖
-            </Link>
-          )}
+      {/* sky 身份 hero：大标题 + 细线 */}
+      <section className="mb-6 flex flex-wrap items-end justify-between gap-4 border-b border-line pb-6">
+        <div>
+          <h1 className="flex items-center gap-3 font-display text-3xl font-bold tracking-[-0.02em] text-white md:text-4xl">
+            <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-line bg-card text-sky-300">
+              <MessagesSquare size={20} />
+            </span>
+            开发者论坛
+          </h1>
+          <p className="mt-2.5 text-[15px] text-dim">提问 · 分享 · 组队 · 内推，好问题值得好答案</p>
         </div>
+        {user && (
+          <Link to="/forum/new" className="btn-ghost !border-sky-400/30 !text-sky-300 hover:!bg-sky-400/10">
+            <PenLine size={14} /> 发帖
+          </Link>
+        )}
       </section>
 
       <div className="flex flex-col gap-4 md:flex-row">

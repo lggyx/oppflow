@@ -5,7 +5,7 @@ import { Link, useSearchParams } from "react-router-dom";
 
 import { api, qs } from "@/api/client";
 import { CountUp } from "@/components/anim";
-import { Aurora, GlareCard } from "@/components/bits";
+import { GlareCard } from "@/components/bits";
 import { EmptyState, ErrorState, PageLoading } from "@/components/ui";
 import { STATUS_LABELS, STATUS_STYLES, type Opportunity } from "@/lib/types";
 import { timeAgo } from "@/lib/utils";
@@ -95,27 +95,26 @@ export default function OpportunitiesPage() {
 
   return (
     <div className="mx-auto max-w-4xl">
-      {/* emerald 身份 hero：大标题 + 实时统计 */}
-      <section className="relative -mx-4 mb-6 overflow-hidden px-4 pb-6 pt-2">
-        <Aurora tint="emerald" className="opacity-60" />
-        <div className="relative flex flex-wrap items-end justify-between gap-4">
+      {/* emerald 身份 hero：大标题 + 实时统计（参考站式细线分区） */}
+      <section className="mb-7 border-b border-line pb-6">
+        <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <h1 className="flex items-center gap-2.5 text-2xl font-bold tracking-tight text-white md:text-3xl">
-              <span className="flex h-9 w-9 items-center justify-center rounded-xl border border-accent/25 bg-accent/10 text-accent">
-                <Compass size={19} />
+            <h1 className="flex items-center gap-3 font-display text-3xl font-bold tracking-[-0.02em] text-white md:text-4xl">
+              <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-line bg-card text-accent">
+                <Compass size={20} />
               </span>
               机会流
             </h1>
-            <p className="mt-1.5 text-sm text-mist">AI 圈的新鲜机会，AI 帮你 10 秒读懂一个</p>
+            <p className="mt-2.5 text-[15px] text-dim">AI 圈的新鲜机会，AI 帮你 10 秒读懂一个</p>
           </div>
-          <div className="flex items-center gap-6 pb-1">
+          <div className="flex items-center gap-7">
             <div>
-              <div className="text-xl font-bold tabular-nums text-accent">{stats ? <CountUp to={stats.open} /> : "—"}</div>
-              <div className="text-[11px] text-fog">报名中</div>
+              <div className="font-display text-2xl font-bold tabular-nums text-accent">{stats ? <CountUp to={stats.open} /> : "—"}</div>
+              <div className="mt-0.5 text-[13px] text-faint">报名中</div>
             </div>
             <div>
-              <div className="text-xl font-bold tabular-nums text-violet-300">{stats ? <CountUp to={stats.active} /> : "—"}</div>
-              <div className="text-[11px] text-fog">进行中</div>
+              <div className="font-display text-2xl font-bold tabular-nums text-violet-300">{stats ? <CountUp to={stats.active} /> : "—"}</div>
+              <div className="mt-0.5 text-[13px] text-faint">进行中</div>
             </div>
             <Link to="/opportunities/new" className="btn-primary">
               <Sparkles size={14} /> 发布机会

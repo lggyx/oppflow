@@ -3,6 +3,25 @@
 本项目的所有重要变更都会记录在此文件。
 格式基于 [Keep a Changelog](https://keepachangelog.com/cn/1.1.0/)。
 
+## [1.2.0] - 2026-08-31
+
+风格对齐：以 lggyx.vercel.app（同作者个人站）源码为准绳重整视觉语言。
+
+### 新增
+- 移植参考站同款 React Bits 组件（motion 驱动）：SplitText 逐字消模糊进场、
+  RotatingText 垂直轮换、Magnet 磁吸按钮、SpringIn 弹簧入场。
+- Landing 重写：超大显示标题（clamp 42-92px / leading 1.04 / tracking -0.02em，
+  serif 斜体强调词嵌入）、头像徽章 + RotatingText、白透明度分层文案、
+  Magnet 磁吸胶囊 CTA、真实组件预览卡弹簧入场。
+
+### 变更
+- 文字层级改为参考站的白色透明度体系（white/55 次要、white/35 弱化），
+  选中态改为反白（参考站同款）。
+- 按钮统一胶囊形（rounded-full），与参考站 pill 语言一致；输入框保持 12px 圆角。
+- 三板块页 hero 极简化：去掉渐变球背景，改为「大标题 + 细线分区」节奏，
+  板块 accent 收敛到图标/数字上。
+- 图标徽章、标签改用 bg-white/[0.06~0.08] + ring-white/10。
+
 ## [1.1.0] - 2026-08-31
 
 视觉升级：让三个板块各有各的性格（此前共用同一套列表模板）。
