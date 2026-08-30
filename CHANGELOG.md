@@ -3,6 +3,29 @@
 本项目的所有重要变更都会记录在此文件。
 格式基于 [Keep a Changelog](https://keepachangelog.com/cn/1.1.0/)。
 
+## [1.1.0] - 2026-08-31
+
+视觉升级：让三个板块各有各的性格（此前共用同一套列表模板）。
+
+### 新增
+- `components/bits.tsx`：React Bits 风格动效组件库（手写实现、零依赖）：
+  Aurora 极光背景、BlurText 逐词浮现、ShinyText 光泽扫过、StarBorder 旋转描边、
+  GlareCard 光标眩光、TiltCard 3D 倾斜、Marquee 无缝横滚、Meteors 流星、FloatIn。
+  全部动画尊重 `prefers-reduced-motion`，只动 transform/opacity。
+- Landing 重构：非对称分栏 hero（左文案 + 右侧真实组件预览卡）、真实社区统计
+  （CountUp）、标签 Marquee、StarBorder 主 CTA。
+- 机会页 emerald 身份：统计 hero（报名中/进行中实时数）、粘性筛选条、
+  GlareCard 卡片、48 小时内截止的脉冲紧迫徽标。
+- 论坛页 sky 身份：板块分类 rail（每板块专属色点）、热度火焰标记（≥3 回复/赞
+  才出现，语义化）、帖子行回复/赞数据块。
+- 约聊页 amber 身份：暖色 hero、"找 TA 喝杯咖啡"成员目录（横滑 GlareCard、
+  可按昵称/技能搜索）、点成员卡片一键发起邀约（保留 handle 邀请兜底）。
+- 后端：`GET /api/members`（公开成员目录）、`GET /api/community/stats`（公开统计）。
+
+### 修复
+- 无（本轮纯增强；浏览器全流程复验通过：四页面桌面/移动端无横向溢出，
+  后端日志 0 ERROR，一键邀约、has_applied、handle 降级链均在线验证）。
+
 ## [0.1.0] - 2026-08-31
 
 v1 全量铺开：在原 Rust 脚手架（保留于 git 历史）基础上，按 FastAPI + React 技术栈重建。

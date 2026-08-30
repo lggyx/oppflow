@@ -7,13 +7,20 @@ import { api } from "@/api/client";
 import { Avatar } from "@/components/ui";
 import { useAuth } from "@/stores/auth";
 
+/** 各板块的 accent 色（视觉身份）：机会=emerald、论坛=sky、约聊=amber。 */
+const NAV_ACCENT: Record<string, { active: string; icon: string }> = {
+  "/opportunities": { active: "text-accent", icon: "text-accent" },
+  "/forum": { active: "text-sky-300", icon: "text-sky-300" },
+  "/coffee": { active: "text-amber-300", icon: "text-amber-300" },
+};
+
 function NavItem({ to, icon, label }: { to: string; icon: ReactNode; label: string }) {
   return (
     <NavLink
       to={to}
       className={({ isActive }) =>
         `flex items-center gap-2.5 rounded-xl px-3.5 py-2 text-sm transition-colors ${
-          isActive ? "bg-card-2 text-white" : "text-mist hover:bg-card-2/60 hover:text-neutral-200"
+          isActive ? `bg-card-2 ${NAV_ACCENT[to]?.active ?? "text-white"}` : "text-mist hover:bg-card-2/60 hover:text-neutral-200"
         }`
       }
     >
@@ -147,20 +154,18 @@ export default function AppShell() {
         <Outlet />
       </main>
 
-      {/* 移动端底部导航 */}
+      {/* 移动端底部导航（分区 accent） */}
       <nav className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-4 border-t border-line bg-ink/90 backdrop-blur-md md:hidden">
         {[
-          { to: "/opportunities", icon: <Compass size={20} />, label: "机会" },
-          { to: "/forum", icon: <MessagesSquare size={20} />, label: "论坛" },
-          { to: "/coffee", icon: <Coffee size={20} />, label: "约聊" },
-          { to: user ? "/dashboard" : "/login", icon: <LayoutDashboard size={20} />, label: "我的" },
+          { to: "/opportunities", icon: <Compass size={20} />, label: "机会", cls: "text-accent" },
+          { to: "/forum", icon: <MessagesSquare size={20} />, label: "论坛", cls: "text-sky-300" },
+          { to: "/coffee", icon: <Coffee size={20} />, label: "约聊", cls: "text-amber-300" },
+          { to: user ? "/dashboard" : "/login", icon: <LayoutDashboard size={20} />, label: "我的", cls: "text-white" },
         ].map((item) => (
           <NavLink
             key={item.label}
             to={item.to}
-            className={({ isActive }) =>
-              `flex flex-col items-center gap-0.5 py-2.5 text-[11px] ${isActive ? "text-accent" : "text-fog"}`
-            }
+            className={({ isActive }) => `flex flex-col items-center gap-0.5 py-2.5 text-[11px] ${isActive ? item.cls : "text-fog"}`}
           >
             {item.icon}
             {item.label}

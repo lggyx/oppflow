@@ -1,40 +1,60 @@
 import { useQuery } from "@tanstack/react-query";
-import { Compass, Search } from "lucide-react";
+import { CalendarClock, Compass, Flame, Search, Send, Sparkles } from "lucide-react";
 import { useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 
 import { api, qs } from "@/api/client";
-import { FadeIn, FadeList } from "@/components/anim";
+import { CountUp } from "@/components/anim";
+import { Aurora, GlareCard } from "@/components/bits";
 import { EmptyState, ErrorState, PageLoading } from "@/components/ui";
 import { STATUS_LABELS, STATUS_STYLES, type Opportunity } from "@/lib/types";
 import { timeAgo } from "@/lib/utils";
 
-export function OpportunityCard({ opp, delay = 0 }: { opp: Opportunity; delay?: number }) {
+/** 距截止不足 48h 的机会显示紧迫徽标（真实时间语义）。 */
+function DeadlineBadge({ iso }: { iso: string }) {
+  const hours = (new Date(iso).getTime() - Date.now()) / 3600_000;
+  if (hours <= 0 || hours > 48) return null;
   return (
-    <FadeIn delay={delay}>
-      <Link to={`/opportunities/${opp.id}`} className="card block p-5 transition-all duration-200 hover:-translate-y-0.5 hover:border-accent/30 hover:shadow-[0_8px_30px_rgba(0,0,0,0.35)]">
-        <div className="mb-2.5 flex items-center gap-2">
-          <span className="chip-accent">{opp.type_name}</span>
-          {(Object.keys(STATUS_LABELS) as Opportunity["status"][]).includes(opp.status) && opp.status !== "open" && (
-            <span className={`rounded-full border px-2 py-0.5 text-[11px] ${STATUS_STYLES[opp.status]}`}>{STATUS_LABELS[opp.status]}</span>
-          )}
-          {opp.status === "open" && <span className="rounded-full border border-accent/30 bg-accent/10 px-2 py-0.5 text-[11px] text-accent">报名中</span>}
-          <span className="ml-auto text-xs text-fog">{timeAgo(opp.created_at)}</span>
-        </div>
-        <h3 className="font-semibold leading-snug text-white">{opp.title}</h3>
-        <p className="mt-1.5 line-clamp-2 text-sm leading-relaxed text-mist">{opp.description}</p>
-        <div className="mt-3 flex flex-wrap items-center gap-1.5">
-          {opp.tags.map((t) => (
-            <span key={t} className="chip">
-              # {t}
+    <span className="inline-flex items-center gap-1 rounded-full border border-red-400/30 bg-red-400/10 px-2 py-0.5 text-[11px] text-red-300">
+      <span className="deadline-pulse h-1.5 w-1.5 rounded-full bg-red-400" aria-hidden />
+      {hours < 1 ? "1 小时内截止" : `${Math.floor(hours)} 小时后截止`}
+    </span>
+  );
+}
+
+export function OpportunityCard({ opp, index = 0 }: { opp: Opportunity; index?: number }) {
+  return (
+    <div className="animate-fade-up" style={{ animationDelay: `${Math.min(index, 8) * 60}ms`, animationFillMode: "backwards" }}>
+      <GlareCard className="card rounded-2xl">
+        <Link to={`/opportunities/${opp.id}`} className="block p-5 transition-transform duration-200 hover:-translate-y-0.5">
+          <div className="mb-2.5 flex flex-wrap items-center gap-2">
+            <span className="chip-accent">{opp.type_name}</span>
+            {opp.status !== "open" && (
+              <span className={`rounded-full border px-2 py-0.5 text-[11px] ${STATUS_STYLES[opp.status]}`}>{STATUS_LABELS[opp.status]}</span>
+            )}
+            {opp.status === "open" && (
+              <>
+                <span className="rounded-full border border-accent/30 bg-accent/10 px-2 py-0.5 text-[11px] text-accent">报名中</span>
+                {opp.apply_deadline && <DeadlineBadge iso={opp.apply_deadline} />}
+              </>
+            )}
+            <span className="ml-auto text-xs text-fog">{timeAgo(opp.created_at)}</span>
+          </div>
+          <h3 className="font-semibold leading-snug text-white">{opp.title}</h3>
+          <p className="mt-1.5 line-clamp-2 text-sm leading-relaxed text-mist">{opp.description}</p>
+          <div className="mt-3 flex flex-wrap items-center gap-1.5">
+            {opp.tags.map((t) => (
+              <span key={t} className="chip">
+                # {t}
+              </span>
+            ))}
+            <span className="ml-auto flex items-center gap-1 text-xs text-fog">
+              {opp.author.avatar_emoji} {opp.author.display_name} · {opp.application_count} 人报名
             </span>
-          ))}
-          <span className="ml-auto text-xs text-fog">
-            {opp.author.avatar_emoji} {opp.author.display_name} · {opp.application_count} 人报名
-          </span>
-        </div>
-      </Link>
-    </FadeIn>
+          </div>
+        </Link>
+      </GlareCard>
+    </div>
   );
 }
 
@@ -61,6 +81,11 @@ export default function OpportunitiesPage() {
       ),
   });
 
+  const { data: stats } = useQuery({
+    queryKey: ["community-stats"],
+    queryFn: () => api.get<{ open: number; active: number; opportunities_total: number }>("/community/stats"),
+  });
+
   function update(key: string, value: string) {
     const next = new URLSearchParams(params);
     if (value) next.set(key, value);
@@ -70,18 +95,37 @@ export default function OpportunitiesPage() {
 
   return (
     <div className="mx-auto max-w-4xl">
-      <div className="mb-6 flex flex-wrap items-center gap-3">
-        <div>
-          <h1 className="text-xl font-bold tracking-tight text-white">机会流</h1>
-          <p className="mt-0.5 text-sm text-mist">AI 圈的新鲜机会，持续更新</p>
+      {/* emerald 身份 hero：大标题 + 实时统计 */}
+      <section className="relative -mx-4 mb-6 overflow-hidden px-4 pb-6 pt-2">
+        <Aurora tint="emerald" className="opacity-60" />
+        <div className="relative flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <h1 className="flex items-center gap-2.5 text-2xl font-bold tracking-tight text-white md:text-3xl">
+              <span className="flex h-9 w-9 items-center justify-center rounded-xl border border-accent/25 bg-accent/10 text-accent">
+                <Compass size={19} />
+              </span>
+              机会流
+            </h1>
+            <p className="mt-1.5 text-sm text-mist">AI 圈的新鲜机会，AI 帮你 10 秒读懂一个</p>
+          </div>
+          <div className="flex items-center gap-6 pb-1">
+            <div>
+              <div className="text-xl font-bold tabular-nums text-accent">{stats ? <CountUp to={stats.open} /> : "—"}</div>
+              <div className="text-[11px] text-fog">报名中</div>
+            </div>
+            <div>
+              <div className="text-xl font-bold tabular-nums text-violet-300">{stats ? <CountUp to={stats.active} /> : "—"}</div>
+              <div className="text-[11px] text-fog">进行中</div>
+            </div>
+            <Link to="/opportunities/new" className="btn-primary">
+              <Sparkles size={14} /> 发布机会
+            </Link>
+          </div>
         </div>
-        <Link to="/opportunities/new" className="btn-primary ml-auto">
-          发布机会
-        </Link>
-      </div>
+      </section>
 
       {/* 筛选条 */}
-      <div className="card mb-5 flex flex-wrap items-center gap-2 p-3">
+      <div className="card sticky top-16 z-20 mb-5 flex flex-wrap items-center gap-2 p-3 backdrop-blur-md">
         {TYPE_FILTERS.map((f) => (
           <button
             key={f.value}
@@ -102,9 +146,9 @@ export default function OpportunitiesPage() {
           </button>
           <button
             onClick={() => update("sort", "deadline")}
-            className={`rounded-lg px-2.5 py-1.5 text-xs ${sort === "deadline" ? "text-white" : "text-fog"}`}
+            className={`flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs ${sort === "deadline" ? "text-white" : "text-fog"}`}
           >
-            截止优先
+            <CalendarClock size={12} /> 截止优先
           </button>
           <form
             onSubmit={(e) => {
@@ -137,19 +181,19 @@ export default function OpportunitiesPage() {
           action={
             !q && (
               <Link to="/opportunities/new" className="btn-primary btn-sm mt-2">
-                发布第一个机会
+                <Flame size={13} /> 发布第一个机会
               </Link>
             )
           }
         />
       ) : (
         <div className="flex flex-col gap-3">
-          <FadeList step={60}>
-            {data.items.map((opp) => (
-              <OpportunityCard key={opp.id} opp={opp} />
-            ))}
-          </FadeList>
-          <div className="pt-2 text-center text-xs text-fog">共 {data.total} 个机会</div>
+          {data.items.map((opp, i) => (
+            <OpportunityCard key={opp.id} opp={opp} index={i} />
+          ))}
+          <div className="flex items-center justify-center gap-2 pt-2 text-xs text-fog">
+            <Send size={12} /> 共 {data.total} 个机会
+          </div>
         </div>
       )}
     </div>

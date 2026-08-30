@@ -137,3 +137,188 @@
   content: attr(data-placeholder);
   @apply pointer-events-none float-left h-0 text-fog;
 }
+
+/* ===== React Bits 风格动效（尊重 prefers-reduced-motion） ===== */
+
+/* Aurora：流动极光 */
+.aurora-blob {
+  position: absolute;
+  width: 46rem;
+  height: 46rem;
+  border-radius: 9999px;
+  filter: blur(72px);
+  opacity: 0.9;
+  will-change: transform;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .aurora-a { animation: aurora-drift 22s ease-in-out infinite alternate; }
+  .aurora-b { animation: aurora-drift 27s ease-in-out infinite alternate-reverse; }
+  .aurora-c { animation: aurora-drift 33s ease-in-out infinite alternate; }
+}
+@keyframes aurora-drift {
+  0% { transform: translate(-12%, -16%) scale(1); }
+  50% { transform: translate(9%, 7%) scale(1.15); }
+  100% { transform: translate(-5%, 13%) scale(0.95); }
+}
+
+/* BlurText：逐词模糊浮现 */
+.bit-blur-word {
+  display: inline-block;
+  opacity: 0;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .bit-blur-word {
+    animation: bit-blur-in 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bit-blur-word { opacity: 1; }
+}
+@keyframes bit-blur-in {
+  from { opacity: 0; filter: blur(8px); transform: translateY(6px); }
+  to { opacity: 1; filter: blur(0); transform: translateY(0); }
+}
+
+/* ShinyText：扫过光泽 */
+.bit-shiny {
+  background: linear-gradient(110deg, currentColor 42%, rgba(255, 255, 255, 0.85) 50%, currentColor 58%);
+  background-size: 220% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .bit-shiny { animation: bit-shine 3.2s linear infinite; }
+}
+@keyframes bit-shine {
+  from { background-position: 200% 0; }
+  to { background-position: -20% 0; }
+}
+
+/* StarBorder：旋转渐变描边 */
+.bit-starborder {
+  position: relative;
+  border-radius: inherit;
+  overflow: hidden;
+  padding: 1px;
+}
+.bit-starborder-ring {
+  position: absolute;
+  inset: -150%;
+  width: 400%;
+  height: 400%;
+  will-change: transform;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .bit-starborder-ring { animation: bit-spin 6s linear infinite; }
+}
+@keyframes bit-spin {
+  to { transform: rotate(360deg); }
+}
+.bit-starborder-inner {
+  position: relative;
+  border-radius: calc(inherit - 1px);
+  background: var(--color-ink);
+  border-radius: inherit;
+}
+
+/* GlareCard：光标眩光 */
+.bit-glare {
+  position: relative;
+  overflow: hidden;
+}
+.bit-glare-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  background: radial-gradient(
+    420px circle at var(--gx, 50%) var(--gy, 50%),
+    rgba(255, 255, 255, 0.09),
+    transparent 45%
+  );
+}
+.bit-glare:hover .bit-glare-layer { opacity: 1; }
+
+/* Marquee：无缝横滚 */
+.bit-marquee {
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(90deg, transparent, black 8%, black 92%, transparent);
+  mask-image: linear-gradient(90deg, transparent, black 8%, black 92%, transparent);
+}
+.bit-marquee-track {
+  display: flex;
+  width: max-content;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .bit-marquee-track { animation: bit-marquee-scroll linear infinite; }
+}
+@keyframes bit-marquee-scroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+.bit-marquee-reverse { animation-direction: reverse; }
+
+/* Meteors：流星 */
+.bit-meteor {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  border-radius: 9999px;
+  background: rgba(251, 191, 36, 0.9);
+  opacity: 0;
+  transform: rotate(var(--angle, 120deg));
+}
+@media (prefers-reduced-motion: no-preference) {
+  .bit-meteor { animation: bit-meteor-fall linear infinite; }
+}
+.bit-meteor::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 60px;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(251, 191, 36, 0.55), transparent);
+}
+@keyframes bit-meteor-fall {
+  0% { opacity: 0; transform: rotate(var(--angle)) translateX(0); }
+  8% { opacity: 1; }
+  100% { opacity: 0; transform: rotate(var(--angle)) translateX(340px); }
+}
+
+/* FloatIn：悬浮入场 */
+.bit-float-in {
+  opacity: 0;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .bit-float-in { animation: bit-float-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bit-float-in { opacity: 1; }
+}
+@keyframes bit-float-up {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* 缓慢漂浮（hero 预览卡片） */
+@media (prefers-reduced-motion: no-preference) {
+  .bit-float-slow { animation: bit-float-bob 7s ease-in-out infinite; }
+  .bit-float-slower { animation: bit-float-bob 9s ease-in-out infinite reverse; }
+}
+@keyframes bit-float-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+/* 截止紧迫红点脉冲（真实时间语义的状态指示） */
+@media (prefers-reduced-motion: no-preference) {
+  .deadline-pulse { animation: deadline-ping 1.4s cubic-bezier(0, 0, 0.2, 1) infinite; }
+}
+@keyframes deadline-ping {
+  0% { box-shadow: 0 0 0 0 rgba(248, 113, 113, 0.5); }
+  70% { box-shadow: 0 0 0 5px rgba(248, 113, 113, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(248, 113, 113, 0); }
+}
