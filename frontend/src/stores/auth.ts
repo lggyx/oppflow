@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-import { api, loadStoredAuth, storeAuth, type AuthPayload, type User } from "@/api/client";
+import { api, loadStoredAuth, normalizeAuth, storeAuth, type User } from "@/api/client";
 
 interface AuthState {
   user: User | null;
@@ -22,17 +22,19 @@ export const useAuth = create<AuthState>((set) => ({
   ready: true,
 
   login: async (email, password) => {
-    persist(await api.post<AuthPayload>("/auth/login", { email, password }));
+    persist(normalizeAuth(await api.post<{ access_token: string; refresh_token: string; user: User }>("/auth/login", { email, password })));
   },
 
   register: async (email, password, displayName, inviteCode) => {
     persist(
-      await api.post<AuthPayload>("/auth/register", {
-        email,
-        password,
-        display_name: displayName,
-        invite_code: inviteCode ?? "",
-      }),
+      normalizeAuth(
+        await api.post<{ access_token: string; refresh_token: string; user: User }>("/auth/register", {
+          email,
+          password,
+          display_name: displayName,
+          invite_code: inviteCode ?? "",
+        }),
+      ),
     );
   },
 

@@ -22,6 +22,7 @@ export interface Opportunity {
   author: AuthorBrief;
   application_count: number;
   publisher_card?: CardSnapshot | null;
+  has_applied?: boolean;
 }
 
 export interface AuthorBrief {

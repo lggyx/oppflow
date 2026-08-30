@@ -154,11 +154,12 @@ export default function OpportunityDetailPage() {
 
         {/* 操作区 */}
         <div className="mt-7 flex flex-wrap items-center gap-3">
-          {me && opp.status === "open" && !isAuthor && (
+          {me && opp.status === "open" && !isAuthor && !opp.has_applied && (
             <button className="btn-primary px-6" onClick={() => setApplyOpen(true)}>
               <Send size={14} /> 立即报名
             </button>
           )}
+          {opp.has_applied && <span className="chip-accent">已报名，等待发布者处理</span>}
           {!me && opp.status === "open" && (
             <Link to="/login" className="btn-primary px-6">
               登录后报名

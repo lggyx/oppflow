@@ -207,6 +207,14 @@ def get_opportunity(opp_id: int, db: DbDep, user: OptionalUser):
     db.commit()
     data = opp_view(opp)
     data["publisher_card"] = publisher_snapshot(db, opp)
+    if user and not _can_edit(user, opp):
+        data["has_applied"] = bool(
+            db.scalar(
+                select(func.count(Application.id)).where(
+                    Application.opportunity_id == opp.id, Application.user_id == user.id
+                )
+            )
+        )
     return data
 
 

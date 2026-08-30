@@ -19,6 +19,11 @@ export interface AuthPayload {
   user: User;
 }
 
+/** 后端返回 snake_case（access_token/refresh_token），统一转为前端 camelCase。 */
+export function normalizeAuth(data: { access_token: string; refresh_token: string; user: User }): AuthPayload {
+  return { accessToken: data.access_token, refreshToken: data.refresh_token, user: data.user };
+}
+
 export interface User {
   id: number;
   email: string;
@@ -60,12 +65,8 @@ async function tryRefresh(): Promise<boolean> {
       body: JSON.stringify({ refresh_token: stored.refreshToken }),
     });
     if (!res.ok) return false;
-    const data = (await res.json()) as AuthPayload;
-    storeAuth(data);
-    stored.accessToken = data.accessToken;
-    stored.refreshToken = data.refreshToken;
-    stored.user = data.user;
-    localStorage.setItem(TOKEN_KEY, JSON.stringify(stored));
+    const data = normalizeAuth((await res.json()) as { access_token: string; refresh_token: string; user: User });
+    localStorage.setItem(TOKEN_KEY, JSON.stringify(data));
     window.dispatchEvent(new CustomEvent("oppflow:auth-refreshed", { detail: data.user }));
     return true;
   } catch {

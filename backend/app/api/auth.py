@@ -33,20 +33,22 @@ def _slug_handle(base: str) -> str:
     return slug[:32] if len(slug) >= 3 else ""
 
 
-def _unique_handle(db: DbDep, base: str, user_id: int | None = None) -> str:
-    candidate = _slug_handle(base) or "user"
-    suffix = 0
+def _unique_handle(db: DbDep, display_name: str, email: str) -> str:
+    """handle 候选依次为：昵称 slug → 邮箱前缀 slug → 随机码（中文昵称无 slug 时自动降级）。"""
+    for base in (display_name or "", email.split("@")[0]):
+        candidate = _slug_handle(base)
+        if not candidate:
+            continue
+        suffix = 0
+        while suffix <= 50:
+            name = candidate if suffix == 0 else f"{candidate}-{suffix + 1}"
+            if db.scalar(select(User).where(User.handle == name)) is None:
+                return name
+            suffix += 1
     while True:
-        q = select(User).where(
-            User.handle == (candidate if suffix == 0 else f"{candidate}-{suffix + 1}")
-        )
-        exists = db.scalar(q)
-        if exists is None:
-            return candidate if suffix == 0 else f"{candidate}-{suffix + 1}"
-        suffix += 1
-        if suffix > 50:
-            candidate = f"user{secrets.token_hex(3)}"
-            suffix = 0
+        candidate = f"user{secrets.token_hex(3)}"
+        if db.scalar(select(User).where(User.handle == candidate)) is None:
+            return candidate
 
 
 def _token_pair(user: User) -> dict:
@@ -124,7 +126,7 @@ def register(body: RegisterIn, db: DbDep):
         email=email,
         password_hash=security.hash_password(body.password),
         display_name=body.display_name.strip(),
-        handle=_unique_handle(db, body.display_name or email.split("@")[0]),
+        handle=_unique_handle(db, body.display_name, email),
         role=role,
     )
     db.add(user)
