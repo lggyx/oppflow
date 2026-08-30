@@ -25,7 +25,7 @@
 | `identities` | id, user_id(uq), protocol_version, name, headline, bio, skills(JSON), contact(JSON,仅自己可见), card_raw(JSON), ai_profile(text), ai_profile_tags(JSON), ai_profile_updated_at, updated_at | 数字名片 |
 | `platform_links` | id, user_id, platform(github/csdn/website), url, verified(bool), verified_at, verify_data(JSON), sort | 平台链接与验证徽章 |
 | `identity_snapshots` | id, subject_user_id, context_type(opportunity/application/coffee_chat), context_id, snapshot(JSON 定格画像), created_at | 身份快照（发布/报名/约聊时定格） |
-| `opportunities` | id, author_id, type(team/gig/event/job), title, description(md), location, apply_deadline, capacity, status, review_status(none/pending/approved/rejected), review_note, tags(JSON 简表), promoted(int,推广位伏笔), views, ai_summary, ai_summary_at, created_at, published_at, closed_at | 机会 |
+| `opportunities` | id, author_id, type(team/gig/event/job), title, description(md), location, apply_deadline, capacity, status, review_note, tags(行表), promoted(int,推广位伏笔), views, ai_summary, ai_summary_at, created_at, published_at, closed_at | 机会 |
 | `opportunity_tags` | id, opportunity_id, tag | 机会标签行（便于筛选） |
 | `applications` | id, opportunity_id, user_id(uq+opp), message, snapshot_id, status(pending/accepted/rejected), created_at, decided_at | 报名 |
 | `notifications` | id, user_id, type, title, body, data(JSON), read(bool), created_at | 站内通知 |
@@ -41,6 +41,7 @@
 - 提交审核（若 `REVIEW_REQUIRED=true`，否则直达 published）→ 管理员 approve→published / reject→draft(带理由)
 - published --作者开启报名--> open（可报名）--作者启动--> active --作者关闭--> closed --作者/管理员归档--> archived
 - 报名仅 `open` 状态可提交；满员自动提示（不自动流转）。
+- 实现说明：审核结果由状态流转本身承载（不再单独存 review_status 字段），驳回理由存 `review_note`。
 
 ## 3. REST API 草案（前缀 `/api`，JWT Bearer，除标注 🔓 公开）
 
@@ -55,6 +56,7 @@
 ### 身份
 - `POST /identity/import` {card JSON}（协议校验，落 identities+platform_links）
 - `GET /identity/me`；`PUT /identity/me`
+- `GET /identity/handle/{handle}` 🔓 按 handle 的公开视图（SPA 名片页用）
 - `GET /identity/{user_id}` 🔓 公开视图（隐藏 contact）
 - `GET/POST/DELETE /identity/links`；`POST /identity/links/{id}/verify`（触发 GitHub OAuth 重验证）
 - `POST /identity/ai-profile`（重新生成 AI 画像，走计量）

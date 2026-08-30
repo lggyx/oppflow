@@ -1,137 +1,70 @@
-# AI 机会发现与协作平台
+# oppflow
 
-面向 AI 领域的机会发现、可信验证和协作交流平台。
+**AI 机会发现与协作社区** —— 面向国内 AI 开发者、学生与独立开发者：
+用可信的数字名片认识彼此，用真实的机会（组队 / 接单 / 活动 / 招聘试用）连接彼此。
+
+> 内测采用邀请码制（冷启动），核心功能永久免费。
+
+## 产品主线路径
+
+```
+邀请码注册 → 导入数字名片 → GitHub OAuth 验证 → AI 能力画像 → 看到第一个匹配机会
+```
+
+这条 onboarding 路径是转化的关键，每一步都追求短、有即时反馈。
+每张名片自带公开分享页（`/u/{handle}`，带 OG 卡片），是天然的传播物料。
+
+## 功能总览（v1）
+
+| 模块 | 能力 |
+|---|---|
+| 数字身份 | 名片 JSON 导入（`oppflow-card/0.1` 协议校验）、平台链接（GitHub/CSDN/个人站）、GitHub OAuth 验证徽章、AI 能力画像、身份快照、公开分享页 |
+| 机会 | 类型（组队/接单/活动/招聘试用）、标签、状态机（草稿→审核→发布→报名→进行→关闭→归档）、管理员审核流、浏览筛选、报名与报名管理（带名片快照）、AI 500 字摘要 |
+| 协作 | Coffee Chat（发起/接受/AI 议程/纪要/AI 会话摘要/互评）、论坛（TipTap 发帖/回复/点赞/AI 讨论串摘要） |
+| 基座 | 邮箱注册（邀请码开关）、JWT 会话（静默刷新）、站内通知、管理后台（审核/邀请码/AI 渠道/统计） |
+| AI | OpenAI 兼容多渠道网关（优先级降级）、按用户/场景计量落库（后续收费伏笔） |
+| 商业伏笔 | 用户等级 `level`、机会推广位 `promoted`、企业认证 `account_type`、AI 额度 `ai_quota_limit`（v1 只埋结构，不做付费功能） |
 
 ## 技术栈
 
-- **语言：** Rust 2021
-- **后端框架：** Axum 0.7 + Tokio
-- **数据库：** SQLite (rusqlite/sqlx)
-- **认证：** JWT + BCrypt
-- **AI：** 调用外部 LLM API (OpenAI 兼容)
-- **前端：** Tauri 2.0 (Rust + Web)
-- **部署：** Docker + Docker Compose
+- **后端**：Python 3.12 + uv ｜ FastAPI + SQLAlchemy 2.x + SQLite(WAL) ｜ httpx ｜ APScheduler ｜ JWT
+- **前端**：Vite + React 19 + TypeScript + Tailwind 4 ｜ bun ｜ TanStack Query ｜ zustand ｜ TipTap
+- **AI**：OpenAI 兼容适配层（多渠道配置 + 降级 + 计量）
+- **部署**：Docker Compose（app + Caddy 自动 HTTPS），按 2C2G 服务器设计
 
-## 快速开始
-
-### 前置要求
-
-- Rust 1.75+
-- SQLite 3
-- Node.js 18+ (if using Tauri frontend)
-
-### 环境变量
+## 本地开发
 
 ```bash
-cp .env.example .env
-# Edit .env with your settings
+# 后端（端口 8000）
+cp .env.example .env            # 按需修改
+cd backend
+uv sync
+uv run uvicorn app.main:app --reload
+
+# 前端（端口 5173，/api 与 /u 自动代理到 8000）
+cd frontend
+bun install
+bun dev
+
+# 测试
+cd backend  && uv run pytest      # 后端 49 用例
+cd frontend && bun run test       # 前端组件冒烟
+cd frontend && bun run build      # 类型检查 + 构建
 ```
 
-### 运行后端
+首个注册用户自动成为管理员；或配置 `ADMIN_EMAILS`。
+本地无 AI Key 也能跑通全链路：`uv run python ../scripts/mock_ai_server.py`，
+并在 `.env` 里把 `AI_CHANNELS_JSON` 指向 `http://127.0.0.1:8902/v1`。
 
-```bash
-cargo run --package server
-```
+## 部署
 
-服务器将在 `http://localhost:3000` 启动。
+见 [deploy/DEPLOY.md](deploy/DEPLOY.md)：`docker compose up -d --build` 一键启动，
+Caddy 自动 HTTPS，含 GitHub OAuth 配置、AI 渠道配置、备份恢复与常见问题。
 
-### 运行测试
+## 文档
 
-```bash
-cargo test --workspace
-```
-
-### Docker 部署
-
-```bash
-docker-compose up --build
-```
-
-## 项目结构
-
-```
-ai-opportunity-platform/
-├── Cargo.toml          # Workspace root
-├── server/             # Axum backend
-│   ├── src/
-│   │   ├── main.rs     # Entry point
-│   │   ├── config.rs   # Configuration
-│   │   ├── error.rs    # Error handling
-│   │   ├── middleware/ # Auth & permission
-│   │   ├── routes/     # API routes
-│   │   ├── handlers/   # Request handlers
-│   │   ├── services/   # Business logic
-│   │   ├── repositories/ # Data access
-│   │   └── models/     # DTOs
-├── shared/             # Shared types
-│   ├── src/
-│   │   ├── entities.rs # Database entities
-│   │   ├── dto.rs      # Request/response DTOs
-│   │   ├── error.rs    # Shared error types
-│   │   └── utils.rs    # Utilities
-├── migrations/         # SQLite migrations
-│   ├── 001_init_schema.sql
-│   └── 002_seed_data.sql
-├── frontend/           # Tauri or web frontend
-└── local-agent/        # Digital identity agent
-```
-
-## API 端点
-
-### 认证
-- `POST /api/v1/auth/register` - 注册
-- `POST /api/v1/auth/login` - 登录
-- `POST /api/v1/auth/refresh` - 刷新 token
-
-### 机会
-- `POST /api/v1/opportunities` - 发布机会 (贡献者+)
-- `GET /api/v1/opportunities` - 列表/筛选
-- `GET /api/v1/opportunities/:id` - 详情
-- `POST /api/v1/opportunities/:id/apply` - 报名
-- `PUT /api/v1/opportunities/:id/status` - 更新状态
-- `POST /api/v1/opportunities/:id/archive` - 沉淀归档
-
-### 数字身份
-- `POST /api/v1/identity/import` - 导入名片
-- `GET /api/v1/identity/me` - 我的身份
-- `PUT /api/v1/identity/me` - 编辑身份
-- `POST /api/v1/identity/me/platforms` - 添加平台链接
-- `GET /api/v1/identity/:id` - 查看他人身份
-
-### 协作
-- `POST /api/v1/collaboration/coffee-chat` - 发起 Coffee Chat
-- `POST /api/v1/collaboration/coffee-chat/:id/accept` - 接受
-- `POST /api/v1/collaboration/coffee-chat/:id/summary` - 提交摘要
-- `POST /api/v1/collaboration/coffee-chat/:id/feedback` - 互评
-- `GET /api/v1/collaboration/forum/posts` - 论坛列表
-- `POST /api/v1/collaboration/forum/posts` - 发帖
-
-### 信任
-- `GET /api/v1/trust/:type/:id` - 查询证据面板
-- `POST /api/v1/trust/evidence` - 提交证据
-- `POST /api/v1/trust/evidence/:id/challenge` - 发起质疑
-- `GET /api/v1/trust/evidence/:id/audit-log` - 审计日志
-
-### 成长
-- `GET /api/v1/growth/me/status` - 我的成长状态
-- `GET /api/v1/growth/me/progress` - 晋升进度
-- `POST /api/v1/growth/expert/apply` - 领域专家申请
-
-### 治理
-- `GET /api/v1/governance/admin/review-queue` - 待审核列表
-- `POST /api/v1/governance/admin/review/:id` - 执行审核
-- `POST /api/v1/governance/admin/challenge/:id` - 处理质疑
-- `POST /api/v1/governance/admin/arbitration` - 仲裁裁决
-
-### AI
-- `POST /api/v1/ai/opportunity/summary` - 生成机会摘要
-- `POST /api/v1/ai/identity/profile` - 生成能力画像
-- `POST /api/v1/ai/coffee-chat/summary` - 生成对话摘要
-- `POST /api/v1/ai/content/pre-check` - 内容预检
-
-## 开发路线图
-
-详见 [DEVELOPMENT.md](./DEVELOPMENT.md)
+- [docs/DESIGN.md](docs/DESIGN.md) —— 数据库 schema、REST API 草案、页面清单、商业伏笔落点
+- [CHANGELOG.md](CHANGELOG.md) —— 版本与里程碑记录
 
 ## 许可证
 

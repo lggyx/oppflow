@@ -12,7 +12,7 @@ interface AuthState {
   setUser: (u: User) => void;
 }
 
-function persist(data: AuthPayload) {
+function persist(data: { accessToken: string; refreshToken: string; user: User }) {
   storeAuth(data);
   useAuth.setState({ user: data.user });
 }
