@@ -177,10 +177,17 @@ def update_me(body: ProfileIn, user: CurrentUser, db: DbDep):
 
 
 @router.get("/github/authorize")
-def github_authorize(user: CurrentUser):
-    """需登录后访问：生成一次性 state（绑定用户），302 到 GitHub。"""
+@router.get("/github/authorize-url")
+def github_authorize_url(user: CurrentUser):
+    """XHR 获取授权跳转地址（整页导航无法携带 JWT，所以由前端先换 URL 再跳转）。
+
+    未配置 OAuth 时返回 501，前端 toast 提示。
+    """
+    settings = get_settings()
+    if not settings.github_configured:
+        raise AppError(501, "github_not_configured", "GitHub 验证未配置（管理员需在 .env 填写 GITHUB_CLIENT_ID/SECRET）")
     state = security.create_oauth_state_token(user.id)
-    return RedirectResponse(github_service.authorize_url(state))
+    return {"url": github_service.authorize_url(state)}
 
 
 @router.get("/github/callback")

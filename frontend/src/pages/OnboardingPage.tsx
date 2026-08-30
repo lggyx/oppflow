@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowRight, BadgeCheck, CheckCircle2, FileUp, Sparkles } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
 import { api, ApiError } from "@/api/client";
@@ -27,6 +27,13 @@ export default function OnboardingPage() {
   const [importOpen, setImportOpen] = useState(false);
   const [cardText, setCardText] = useState("");
 
+  // OAuth 回跳提示：verified=成功，not_configured=后端未配置
+  useEffect(() => {
+    const gh = params.get("github");
+    if (gh === "not_configured") toast("GitHub 验证未配置（需要管理员在 .env 填写 OAuth 参数）", "err");
+    else if (gh === "verified") toast("GitHub 验证成功");
+  }, [params]);
+
   const { data: identity } = useQuery({
     queryKey: ["identity", "me"],
     queryFn: () => api.get<IdentityView>("/identity/me"),
@@ -45,8 +52,14 @@ export default function OnboardingPage() {
       toast(e instanceof ApiError ? e.message : e instanceof SyntaxError ? "JSON 格式有误" : "导入失败", "err"),
   });
 
-  const githubAuthorize = () => {
-    window.location.href = "/api/auth/github/authorize";
+  // 整页导航带不上 JWT：先 XHR 换取授权 URL（含一次性 state），再跳转
+  const githubAuthorize = async () => {
+    try {
+      const { url } = await api.get<{ url: string }>("/auth/github/authorize-url");
+      window.location.href = url;
+    } catch (e) {
+      toast(e instanceof ApiError ? e.message : "无法发起 GitHub 验证", "err");
+    }
   };
 
   const profileMutation = useMutation({
